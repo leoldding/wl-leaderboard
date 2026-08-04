@@ -187,7 +187,7 @@ const Admin: React.FC = () => {
 
                     {error && <div className="text-error">{error}</div>}
 
-                    <div className="overflow-x-auto w-full rounded-box border border-base-content/5 bg-base-100 max-h-[75dvh]">
+                    <div className="overflow-x-auto w-full rounded-box border border-base-content/5 bg-base-100 max-h-[70dvh]">
                         <table className="table table-zebra table-pin-rows text-center">
                             <thead className="font-bold text-md md:text-2xl">
                                 <tr>

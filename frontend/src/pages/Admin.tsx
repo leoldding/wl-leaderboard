@@ -119,7 +119,7 @@ const Admin: React.FC = () => {
     };
 
     const inputClass =
-        "input input-bordered w-full";
+        "input input-xs md:input-md input-bordered w-full";
 
     if (checkingAuth) {
         return (
@@ -143,34 +143,36 @@ const Admin: React.FC = () => {
                 <div className="card-body items-center text-center h-full min-h-0">
                     <form
                         onSubmit={submit}
-                        className="flex flex-col md:flex-row gap-2 w-full md:max-w-[60%]"
+                        className="flex flex-col gap-2 w-full md:max-w-[60%] md:flex-row"
                     >
-                        <input
-                            type="text"
-                            placeholder="Name"
-                            className={inputClass}
-                            value={form.name}
-                            onChange={(e) => setField("name")(e.target.value)}
-                            required
-                        />
-                        <input
-                            type="number"
-                            placeholder="Snatch"
-                            className={inputClass}
-                            value={form.snatch}
-                            onChange={(e) => setField("snatch")(e.target.value)}
-                            min={1}
-                            required
-                        />
-                        <input
-                            type="number"
-                            placeholder="Clean & Jerk"
-                            className={inputClass}
-                            value={form.cleanjerk}
-                            onChange={(e) => setField("cleanjerk")(e.target.value)}
-                            min={1}
-                            required
-                        />
+                        <div className="grid grid-cols-3 gap-2 w-full md:flex md:flex-1">
+                            <input
+                                type="text"
+                                placeholder="Name"
+                                className={inputClass}
+                                value={form.name}
+                                onChange={(e) => setField("name")(e.target.value)}
+                                required
+                            />
+                            <input
+                                type="number"
+                                placeholder="Snatch"
+                                className={inputClass}
+                                value={form.snatch}
+                                onChange={(e) => setField("snatch")(e.target.value)}
+                                min={1}
+                                required
+                            />
+                            <input
+                                type="number"
+                                placeholder="Clean & Jerk"
+                                className={inputClass}
+                                value={form.cleanjerk}
+                                onChange={(e) => setField("cleanjerk")(e.target.value)}
+                                min={1}
+                                required
+                            />
+                        </div>
                         <button type="submit" className="btn btn-primary">
                             {editingId ? "Update" : "Add"}
                         </button>

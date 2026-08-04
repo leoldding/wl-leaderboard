@@ -119,7 +119,7 @@ const Admin: React.FC = () => {
     };
 
     const inputClass =
-        "input input-xs md:input-md input-bordered w-full";
+        "input input-sm md:input-md input-bordered w-full";
 
     if (checkingAuth) {
         return (
@@ -135,7 +135,7 @@ const Admin: React.FC = () => {
 
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
-            <header className="py-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
+            <header className="pt-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
                 Weightlifting Leaderboard
             </header>
 
@@ -238,7 +238,7 @@ const Admin: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-end p-6">
+            <div className="flex justify-end p-6 pt-0">
                 <Link to="/">
                     <button className="btn btn-lg btn-soft btn-accent btn-circle">
                         <FaHome />

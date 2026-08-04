@@ -22,7 +22,7 @@ const Home: React.FC = () => {
 
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
-            <header className="py-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
+            <header className="pt-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
                 Weightlifting Leaderboard
             </header>
             <div className="card text-neutral-content w-full min-w-[80dvw] md:max-w-[calc(100dvw-64px)] mx-auto flex-1 min-h-0">
@@ -51,7 +51,7 @@ const Home: React.FC = () => {
                     </div>
                 </div>
             </div>
-            <div className="flex justify-end p-6">
+            <div className="flex justify-end p-6 pt-0">
                 <Link to="/admin">
                     <button className="flex items-center justify-center btn btn-lg btn-soft btn-accent btn-circle">
                         <FaLock />

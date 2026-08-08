@@ -194,16 +194,17 @@ func (l *LeaderboardHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 	_, err = l.clients.DynamoDB.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           aws.String(l.tableName),
 		Key:                 key,
-		UpdateExpression:    aws.String("SET #name = :n, snatch = :s, cleanjerk = :c, total = :t"),
+		UpdateExpression:    aws.String("SET #n = :name, snatch = :snatch, cleanjerk = :cleanjerk, #t = :total"),
 		ConditionExpression: aws.String("attribute_exists(id)"),
 		ExpressionAttributeNames: map[string]string{
-			"#name": "name",
+			"#n": "name",
+			"#t": "total",
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
-			":n": &types.AttributeValueMemberS{Value: row.Name},
-			":s": &types.AttributeValueMemberN{Value: strconv.Itoa(row.Snatch)},
-			":c": &types.AttributeValueMemberN{Value: strconv.Itoa(row.CleanJerk)},
-			":t": &types.AttributeValueMemberN{Value: strconv.Itoa(row.Total)},
+			":name":      &types.AttributeValueMemberS{Value: row.Name},
+			":snatch":    &types.AttributeValueMemberN{Value: strconv.Itoa(row.Snatch)},
+			":cleanjerk": &types.AttributeValueMemberN{Value: strconv.Itoa(row.CleanJerk)},
+			":total":     &types.AttributeValueMemberN{Value: strconv.Itoa(row.Total)},
 		},
 	})
 	if err != nil {

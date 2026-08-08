@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import { FaHome } from "react-icons/fa";
+import { GiWeightLiftingUp } from "react-icons/gi";
 import { api, apiJson } from "../api/client";
 import type { LeaderboardRow } from "../types/leaderboard";
 
@@ -136,7 +137,7 @@ const Admin: React.FC = () => {
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
             <header className="pt-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
-                Weightlifting Leaderboard
+                Weightlifting Leaderboard <GiWeightLiftingUp className="inline -translate-y-1" />
             </header>
 
             <div className="card text-neutral-content w-full min-w-[80dvw] md:max-w-[calc(100dvw-64px)] mx-auto flex-1 min-h-0">

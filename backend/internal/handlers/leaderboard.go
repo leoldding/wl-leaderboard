@@ -23,12 +23,12 @@ import (
 const requestTimeout = 5 * time.Second
 
 var (
-	errInvalidJSON     = errors.New("invalid json body")
-	errIDRequired      = errors.New("id is required")
-	errNameRequired    = errors.New("name is required")
-	errSnatchPositive  = errors.New("snatch must be a positive number")
-	errCleanJerkPos    = errors.New("cleanjerk must be a positive number")
-	errNotFound        = errors.New("row not found")
+	errInvalidJSON    = errors.New("invalid json body")
+	errIDRequired     = errors.New("id is required")
+	errNameRequired   = errors.New("name is required")
+	errSnatchPositive = errors.New("snatch must be a positive number")
+	errCleanJerkPos   = errors.New("cleanjerk must be a positive number")
+	errNotFound       = errors.New("row not found")
 )
 
 type LeaderboardHandler struct {
@@ -194,8 +194,11 @@ func (l *LeaderboardHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 	_, err = l.clients.DynamoDB.UpdateItem(ctx, &dynamodb.UpdateItemInput{
 		TableName:           aws.String(l.tableName),
 		Key:                 key,
-		UpdateExpression:    aws.String("SET name = :n, snatch = :s, cleanjerk = :c, total = :t"),
+		UpdateExpression:    aws.String("SET #name = :n, snatch = :s, cleanjerk = :c, total = :t"),
 		ConditionExpression: aws.String("attribute_exists(id)"),
+		ExpressionAttributeNames: map[string]string{
+			"#name": "name",
+		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":n": &types.AttributeValueMemberS{Value: row.Name},
 			":s": &types.AttributeValueMemberN{Value: strconv.Itoa(row.Snatch)},

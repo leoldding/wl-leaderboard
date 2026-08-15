@@ -136,7 +136,7 @@ const Admin: React.FC = () => {
 
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
-            <header className="pt-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
+            <header className="py-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
                 Weightlifting Leaderboard <GiWeightLiftingUp className="inline -translate-y-1" />
             </header>
 

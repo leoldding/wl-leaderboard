@@ -23,7 +23,7 @@ const Home: React.FC = () => {
 
     return (
         <div className="flex flex-col h-dvh overflow-hidden">
-            <header className="pt-8 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
+            <header className="py-4 z-50 shadow text-center text-2xl md:text-4xl bg-base-100">
                 Weightlifting Leaderboard <GiWeightLiftingUp className="inline -translate-y-1" />
             </header>
             <div className="card text-neutral-content w-full min-w-[80dvw] md:max-w-[calc(100dvw-64px)] mx-auto flex-1 min-h-0">

@@ -29,10 +29,11 @@ jobs:
         with:
           node-version: 20.x
 
-      - name: Install and Build
+      - name: Install, lint, and build
         working-directory: ./frontend
         run: |
-          npm install
+          npm ci
+          npm run lint
           npm run build
 
       - name: Configure AWS Credentials

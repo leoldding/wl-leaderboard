@@ -104,7 +104,7 @@ const Admin: React.FC = () => {
             resetForm();
         } catch (err) {
             console.error(err);
-            setError(editingId ? "Failed to update row." : "Failed to add row.");
+            setError(err instanceof Error ? err.message : editingId ? "Failed to update row." : "Failed to add row.");
         }
     };
 
@@ -115,7 +115,7 @@ const Admin: React.FC = () => {
             setRows((prev) => prev.filter((row) => row.id !== id));
         } catch (err) {
             console.error(err);
-            setError("Failed to delete row.");
+            setError(err instanceof Error ? err.message : "Failed to delete row.");
         }
     };
 
@@ -161,7 +161,9 @@ const Admin: React.FC = () => {
                                 className={inputClass}
                                 value={form.snatch}
                                 onChange={(e) => setField("snatch")(e.target.value)}
-                                min={1}
+                                min={0}
+                                max={500}
+                                step="0.01"
                                 required
                             />
                             <input
@@ -170,7 +172,9 @@ const Admin: React.FC = () => {
                                 className={inputClass}
                                 value={form.cleanjerk}
                                 onChange={(e) => setField("cleanjerk")(e.target.value)}
-                                min={1}
+                                min={0}
+                                max={500}
+                                step="0.01"
                                 required
                             />
                         </div>

@@ -4,6 +4,7 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
@@ -57,7 +58,16 @@ func main() {
 
 	log.Println("leaderboard service running on :8085")
 
-	if err := http.ListenAndServe(":8085", r); err != nil {
+	server := &http.Server{
+		Addr:              ":8085",
+		Handler:           r,
+		ReadHeaderTimeout: 5 * time.Second,
+		ReadTimeout:       15 * time.Second,
+		WriteTimeout:      30 * time.Second,
+		IdleTimeout:       60 * time.Second,
+	}
+
+	if err := server.ListenAndServe(); err != nil && err != http.ErrServerClosed {
 		log.Fatalf("server exited: %v", err)
 	}
 }

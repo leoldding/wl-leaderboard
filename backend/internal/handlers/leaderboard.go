@@ -4,7 +4,10 @@ import (
 	"context"
 	"encoding/json"
 	"errors"
+	"io"
 	"log"
+	"math"
+	"mime"
 	"net/http"
 	"sort"
 	"strconv"
@@ -20,14 +23,18 @@ import (
 	"github.com/leoldding/wl-leaderboard/internal/awsclients"
 )
 
-const requestTimeout = 5 * time.Second
+const (
+	requestTimeout = 5 * time.Second
+	scanTimeout    = 30 * time.Second
+	maxBodyBytes   = 16 << 10
+)
 
 var (
 	errInvalidJSON    = errors.New("invalid json body")
 	errIDRequired     = errors.New("id is required")
 	errNameRequired   = errors.New("name is required")
-	errSnatchPositive = errors.New("snatch must be a positive number")
-	errCleanJerkPos   = errors.New("cleanjerk must be a positive number")
+	errSnatchRange    = errors.New("snatch must be between 0 and 500 with at most 2 decimal places")
+	errCleanJerkRange = errors.New("cleanjerk must be between 0 and 500 with at most 2 decimal places")
 	errNotFound       = errors.New("row not found")
 )
 
@@ -37,20 +44,20 @@ type LeaderboardHandler struct {
 }
 
 type leaderboardRow struct {
-	ID        string `json:"id" dynamodbav:"id"`
-	Name      string `json:"name" dynamodbav:"name"`
-	Snatch    int    `json:"snatch" dynamodbav:"snatch"`
-	CleanJerk int    `json:"cleanjerk" dynamodbav:"cleanjerk"`
-	Total     int    `json:"total" dynamodbav:"total"`
+	ID        string  `json:"id" dynamodbav:"id"`
+	Name      string  `json:"name" dynamodbav:"name"`
+	Snatch    float64 `json:"snatch" dynamodbav:"snatch"`
+	CleanJerk float64 `json:"cleanjerk" dynamodbav:"cleanjerk"`
+	Total     float64 `json:"total" dynamodbav:"total"`
 }
 
 type rowPayload struct {
-	Name      string `json:"name"`
-	Snatch    int    `json:"snatch"`
-	CleanJerk int    `json:"cleanjerk"`
+	Name      string  `json:"name"`
+	Snatch    float64 `json:"snatch"`
+	CleanJerk float64 `json:"cleanjerk"`
 }
 
-func newLeaderboardRow(id, name string, snatch, cleanjerk int) leaderboardRow {
+func newLeaderboardRow(id, name string, snatch, cleanjerk float64) leaderboardRow {
 	return leaderboardRow{
 		ID:        id,
 		Name:      name,
@@ -68,7 +75,7 @@ func NewLeaderboardHandler(clients *awsclients.Clients, tableName string) *Leade
 }
 
 func (l *LeaderboardHandler) GetRows(w http.ResponseWriter, r *http.Request) {
-	ctx, cancel := context.WithTimeout(r.Context(), requestTimeout)
+	ctx, cancel := context.WithTimeout(r.Context(), scanTimeout)
 	defer cancel()
 
 	var rows []map[string]types.AttributeValue
@@ -123,7 +130,7 @@ func (l *LeaderboardHandler) AddRow(w http.ResponseWriter, r *http.Request) {
 
 	var payload rowPayload
 
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	if err := decodeRowPayload(w, r, &payload); err != nil {
 		http.Error(w, errInvalidJSON.Error(), http.StatusBadRequest)
 		return
 	}
@@ -172,7 +179,7 @@ func (l *LeaderboardHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 
 	var payload rowPayload
 
-	if err := json.NewDecoder(r.Body).Decode(&payload); err != nil {
+	if err := decodeRowPayload(w, r, &payload); err != nil {
 		http.Error(w, errInvalidJSON.Error(), http.StatusBadRequest)
 		return
 	}
@@ -202,9 +209,9 @@ func (l *LeaderboardHandler) UpdateRow(w http.ResponseWriter, r *http.Request) {
 		},
 		ExpressionAttributeValues: map[string]types.AttributeValue{
 			":name":      &types.AttributeValueMemberS{Value: row.Name},
-			":snatch":    &types.AttributeValueMemberN{Value: strconv.Itoa(row.Snatch)},
-			":cleanjerk": &types.AttributeValueMemberN{Value: strconv.Itoa(row.CleanJerk)},
-			":total":     &types.AttributeValueMemberN{Value: strconv.Itoa(row.Total)},
+			":snatch":    &types.AttributeValueMemberN{Value: strconv.FormatFloat(row.Snatch, 'f', -1, 64)},
+			":cleanjerk": &types.AttributeValueMemberN{Value: strconv.FormatFloat(row.CleanJerk, 'f', -1, 64)},
+			":total":     &types.AttributeValueMemberN{Value: strconv.FormatFloat(row.Total, 'f', -1, 64)},
 		},
 	})
 	if err != nil {
@@ -269,11 +276,38 @@ func validateRow(r rowPayload) error {
 	if strings.TrimSpace(r.Name) == "" {
 		return errNameRequired
 	}
-	if r.Snatch <= 0 {
-		return errSnatchPositive
+	if !isValidLift(r.Snatch) {
+		return errSnatchRange
 	}
-	if r.CleanJerk <= 0 {
-		return errCleanJerkPos
+	if !isValidLift(r.CleanJerk) {
+		return errCleanJerkRange
 	}
 	return nil
+}
+
+func decodeRowPayload(w http.ResponseWriter, r *http.Request, payload *rowPayload) error {
+	contentType, _, err := mime.ParseMediaType(r.Header.Get("Content-Type"))
+	if err != nil || contentType != "application/json" {
+		return errInvalidJSON
+	}
+
+	r.Body = http.MaxBytesReader(w, r.Body, maxBodyBytes)
+	decoder := json.NewDecoder(r.Body)
+	decoder.DisallowUnknownFields()
+	if err := decoder.Decode(payload); err != nil {
+		return errInvalidJSON
+	}
+	if err := decoder.Decode(&struct{}{}); !errors.Is(err, io.EOF) {
+		return errInvalidJSON
+	}
+	return nil
+}
+
+func isValidLift(lift float64) bool {
+	if math.IsNaN(lift) || math.IsInf(lift, 0) || lift < 0 || lift > 500 {
+		return false
+	}
+
+	scaled := lift * 100
+	return math.Abs(scaled-math.Round(scaled)) < 1e-9
 }
